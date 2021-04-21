@@ -1,0 +1,71 @@
+<center>
+    <h1 style="margin-top:20px;">Liste des Prédictions</h1>
+</center>
+
+<form id="profileImgForm" max-width="200" max-height="200">
+    <input id="monImage" name="monImage" type="file" />
+</form>
+
+<br />
+
+<div class="ui grid two columns">
+    <div class="column">
+        <img id="img" src="" width="450" height="300"></img>
+    </div>
+    <div class="column">
+        <table class="ui celled fixed padded table" style="margin-top:20px;">
+            <thead>
+                <tr class="center aligned">
+                    <th>Date</th>
+                    <th>Nom</th>
+                    <th>Taille</th>
+                    <th>Analyse</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each airbnb_entries}}
+                <tr>
+                    <td>{{this.Date}}</td>
+                    <td>{{this.Nom}}</td>
+                    <td class="center aligned">{{this.Taille}}</td>
+                    <td class="center aligned">{{this.Analyse}}</td>
+                    <td class="center aligned">
+                        <a href="/delete/{{this._id}}" class="ui small red button">Supprimer</a>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    var imgfile = "";
+    document.getElementById("profileImgForm").onchange = function (e) {
+        e.preventDefault();
+        if (e.target.files.length > 0) {
+            imgfile = e.target.files[0];
+            // console.log(imgfile);
+        }
+
+        var file = $("input[type=file]").get(0).files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                $("#img").attr("src", reader.result);
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // Calcul prédictions 
+        const img = document.getElementById('img');
+
+        (async () => {
+            const model = await mobilenet.load()
+            const predictions = await model.classify(img)
+
+            console.log(predictions);
+        })()
+    }
+</script>
