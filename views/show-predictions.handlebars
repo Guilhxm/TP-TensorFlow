@@ -60,7 +60,7 @@
         </table>
 
     </div>
-    <div class="eight wide column">
+    <div id="tabHistorique" class="eight wide column">
         <table class="ui celled fixed padded center aligned table" style="margin-top: 40px;">
             <thead>
                 <tr class="center aligned">
@@ -134,28 +134,16 @@
                 document.getElementById("tablePredi").style.display = 'table';
             }
 
-            var cocoPredictions = "";
-
             // CocoSSD
-            // Load the model.
-            // const model2 = await cocoSsd.load().then(model => {
-            // detect objects in the image.
-            // model.detect(img).then(cocoPredictions => {
-
             const model2 = await cocoSsd.load()
-            const model3 = await model2.detect(img)
-
-            console.log(model3);
+            const cocoPredictions = await model2.detect(img)
 
             document.getElementById("tableCocoSSD").style.display = 'none';
 
-            // console.log('Predictions: ', cocoPredictions[0]);
-            // console.log('Type: ', cocoPredictions[0]['class']);
-            // console.log('Type: ', cocoPredictions[0]['score']);
+            console.log('Predictions: ', cocoPredictions[0]);
 
-            // var cocoPredictions1 = cocoPredictions[0]['class'];
-            // var cocoPredictions2 = cocoPredictions[0]['score'];
-
+            var cocoPredictions1 = cocoPredictions[0]['class'];
+            var cocoPredictions2 = cocoPredictions[0]['score'];
 
             if (cocoPredictions[0] !== undefined) {
                 document.getElementById("tdClass").innerHTML = cocoPredictions[0]['class'];
@@ -163,61 +151,56 @@
                 document.getElementById("tableCocoSSD").style.display = 'table';
             }
 
-            // });
-            // });
+            var maDate = new Date();
+            laDate = maDate.getDate() + "/" + (maDate.getMonth() + 1) + "/" + maDate.getFullYear();
+            TailleImage = imgfile.size;
+            NomImage = imgfile.name;
 
-            console.log(model2);
-            console.log(model3);
+            if (predictions[0]['probability'] > cocoPredictions[0]['score']) {
+                Categorie = predictions[0]['className'];
+                maxValue = (predictions[0]['probability'] * 100).toFixed(2);
+            } else {
+                Categorie = cocoPredictions[0]['class'];
+                maxValue = (cocoPredictions[0]['score'] * 100).toFixed(2);
+            }
 
-            // console.log(predictions[1]['className']);
-            // console.log(predictions[1]['probability']);
+            // console.log(laDate);
+            // console.log(NomImage);
+            // console.log(TailleImage);
+            // console.log(maxValue);
+            // console.log(Categorie);
 
-            // console.log(predictions[2]['className']);
-            // console.log(predictions[2]['probability']);
+            $.ajax({
+                url: "/create",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    "Date": laDate,
+                    "Nom": NomImage,
+                    "Taille": TailleImage,
+                    "Analyse": maxValue,
+                    "Type": Categorie
+                }),
+                contentType: "application/json",
+                cache: false,
+                timeout: 5000,
+                complete: function () {
+                    // called when complete
+                    // console.log('process complete');
+                },
 
-            // console.log(cocoPredictions);
-            // console.log(model2);
+                success: function (data) {
+                    // console.log(data);
+                    // console.log('process sucess');
+                    $("#tabHistorique").load(window.location + " #tabHistorique");
+                },
 
-            // console.log(cocoPredictions[0]['class']);
-            // console.log(cocoPredictions[0]['score']);
-
-            // Ajout élément en BD
-
-
+                error: function () {
+                    console.log('process error ajax');
+                },
+            });
 
         })()
 
     }
-
 </script>
-
-{{!-- $.ajax({
-url: "/create",
-type: "POST",
-dataType: "json",
-data: {
-Date: '02/04/2020',
-Nom: 'test1',
-Taille: 'taille1',
-Analyse: 1111,
-Type: 'Type1',
-// title: $('#page_title').val(),
-// content: $('#page-content').val()
-},
-contentType: "application/json",
-cache: false,
-timeout: 5000,
-complete: function () {
-// called when complete
-console.log('process complete');
-},
-
-success: function (data) {
-console.log(data);
-console.log('process sucess');
-},
-
-error: function () {
-console.log('process error');
-},
-}); --}}
