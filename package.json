@@ -15,6 +15,7 @@
         "mongodb": "^3.6.6",
         "morgan": "^1.10.0",
         "multer": "^1.4.2",
+        "resnet_imagenet": "^1.0.4",
         "vue": "^2.6.12"
     },
     "devDependencies": {},

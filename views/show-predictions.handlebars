@@ -1,0 +1,223 @@
+<center>
+    <h1 style="margin-top:20px;">TP TensorFlow</h1>
+</center>
+
+<br />
+
+<div class="ui grid">
+    <div class="five wide column">
+
+        <form id="profileImgForm" max-width="150" max-height="150">
+            <center><input id="monImage" name="monImage" type="file" /></center>
+        </form>
+        <br />
+        <img id="img" src="" width="520" height="350"
+            style="display: none; border: 1px solid grey; border-radius: 3px;"></img>
+    </div>
+    <div class="six wide column" style="max-width:330px">
+        <table id="tablePredi" class="ui celled center aligned table" style="display:none; margin-top: 40px;">
+            <thead>
+                <tr>
+                    <th colspan="2">MobileNet</th>
+                </tr>
+                <tr>
+                    <th>Prédiction</th>
+                    <th style="width: 150px">Probabilité en %</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="tdClassPredi"></td>
+                    <td id="tdScorePredi"></td>
+                </tr>
+                <tr>
+                    <td id="tdClassPredi1"></td>
+                    <td id="tdScorePredi1"></td>
+                </tr>
+                <tr>
+                    <td id="tdClassPredi2"></td>
+                    <td id="tdScorePredi2"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table id="tableCocoSSD" class="ui celled center aligned table" style="display:none;">
+            <thead>
+                <tr>
+                    <th colspan="2">CocoSSD</th>
+                </tr>
+                <tr>
+                    <th>Prédiction</th>
+                    <th style="width: 150px">Probabilité en %</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="tdClass"></td>
+                    <td id="tdScore"></td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div class="eight wide column">
+        <table class="ui celled fixed padded center aligned table" style="margin-top: 40px;">
+            <thead>
+                <tr class="center aligned">
+                    <th>Date</th>
+                    <th>Nom</th>
+                    <th>Taille</th>
+                    <th>Analyse</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {{#each prediction_entries}}
+                <tr>
+                    <td>{{this.Date}}</td>
+                    <td>{{this.Nom}}</td>
+                    <td class="center aligned">{{this.Taille}}</td>
+                    <td class="center aligned">{{this.Analyse}}</td>
+                    <td class="center aligned">{{this.Type}}</td>
+                    <td class="center aligned">
+                        <a href="/delete/{{this._id}}" class="ui small red button">Supprimer</a>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+
+    var imgfile = "";
+    document.getElementById("profileImgForm").onchange = function (e) {
+        e.preventDefault();
+        if (e.target.files.length > 0) {
+            imgfile = e.target.files[0];
+        }
+
+        var file = $("input[type=file]").get(0).files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                $("#img").attr("src", reader.result);
+            }
+            reader.readAsDataURL(file);
+        }
+
+        document.getElementById("img").style.display = 'table';
+
+        // Calcul prédictions 
+        const img = document.getElementById('img');
+
+        (async () => {
+            const model = await mobilenet.load()
+            const predictions = await model.classify(img)
+
+            console.log(predictions);
+
+            // MobileNet
+            document.getElementById("tdClassPredi").innerHTML = predictions[0]['className'];
+            document.getElementById("tdScorePredi").innerHTML = (predictions[0]['probability'] * 100).toFixed(2);
+
+            document.getElementById("tdClassPredi1").innerHTML = predictions[1]['className'];
+            document.getElementById("tdScorePredi1").innerHTML = (predictions[1]['probability'] * 100).toFixed(2);
+
+            document.getElementById("tdClassPredi2").innerHTML = predictions[2]['className'];
+            document.getElementById("tdScorePredi2").innerHTML = (predictions[2]['probability'] * 100).toFixed(2);
+
+            if (predictions != undefined) {
+                document.getElementById("tablePredi").style.display = 'table';
+            }
+
+            var cocoPredictions = "";
+
+            // CocoSSD
+            // Load the model.
+            // const model2 = await cocoSsd.load().then(model => {
+            // detect objects in the image.
+            // model.detect(img).then(cocoPredictions => {
+
+            const model2 = await cocoSsd.load()
+            const model3 = await model2.detect(img)
+
+            console.log(model3);
+
+            document.getElementById("tableCocoSSD").style.display = 'none';
+
+            // console.log('Predictions: ', cocoPredictions[0]);
+            // console.log('Type: ', cocoPredictions[0]['class']);
+            // console.log('Type: ', cocoPredictions[0]['score']);
+
+            // var cocoPredictions1 = cocoPredictions[0]['class'];
+            // var cocoPredictions2 = cocoPredictions[0]['score'];
+
+
+            if (cocoPredictions[0] !== undefined) {
+                document.getElementById("tdClass").innerHTML = cocoPredictions[0]['class'];
+                document.getElementById("tdScore").innerHTML = (cocoPredictions[0]['score'] * 100).toFixed(2);
+                document.getElementById("tableCocoSSD").style.display = 'table';
+            }
+
+            // });
+            // });
+
+            console.log(model2);
+            console.log(model3);
+
+            // console.log(predictions[1]['className']);
+            // console.log(predictions[1]['probability']);
+
+            // console.log(predictions[2]['className']);
+            // console.log(predictions[2]['probability']);
+
+            // console.log(cocoPredictions);
+            // console.log(model2);
+
+            // console.log(cocoPredictions[0]['class']);
+            // console.log(cocoPredictions[0]['score']);
+
+            // Ajout élément en BD
+
+
+
+        })()
+
+    }
+
+</script>
+
+{{!-- $.ajax({
+url: "/create",
+type: "POST",
+dataType: "json",
+data: {
+Date: '02/04/2020',
+Nom: 'test1',
+Taille: 'taille1',
+Analyse: 1111,
+Type: 'Type1',
+// title: $('#page_title').val(),
+// content: $('#page-content').val()
+},
+contentType: "application/json",
+cache: false,
+timeout: 5000,
+complete: function () {
+// called when complete
+console.log('process complete');
+},
+
+success: function (data) {
+console.log(data);
+console.log('process sucess');
+},
+
+error: function () {
+console.log('process error');
+},
+}); --}}
