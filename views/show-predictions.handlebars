@@ -59,6 +59,40 @@
             </tbody>
         </table>
 
+        <table id="tabT" class="ui celled center aligned table" style="display:none;">
+            <thead>
+                <tr>
+                    <th colspan="2">Teachable Machine</th>
+                </tr>
+                <tr>
+                    <th>Prédiction</th>
+                    <th style="width: 150px">Probabilité en %</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="tdClassT1"></td>
+                    <td id="tdScoreT1"></td>
+                </tr>
+                <tr>
+                    <td id="tdClassT2"></td>
+                    <td id="tdScoreT2"></td>
+                </tr>
+                <tr>
+                    <td id="tdClassT3"></td>
+                    <td id="tdScoreT3"></td>
+                </tr>
+                <tr>
+                    <td id="tdClassT4"></td>
+                    <td id="tdScoreT4"></td>
+                </tr>
+                <tr>
+                    <td id="tdClassT5"></td>
+                    <td id="tdScoreT5"></td>
+                </tr>
+            </tbody>
+        </table>
+
     </div>
     <div id="tabHistorique" class="eight wide column">
         <table class="ui celled fixed padded center aligned table" style="margin-top: 40px;">
@@ -82,7 +116,9 @@
                     <td class="center aligned">{{this.Analyse}}</td>
                     <td class="center aligned">{{this.Type}}</td>
                     <td class="center aligned">
-                        <a href="/delete/{{this._id}}" class="ui small red button">Supprimer</a>
+                        <a onclick="deleteFunction('{{this._id}}')" id="{{this._id}}"
+                            class="ui small red button">Supprimer</a>
+                        {{!-- href="/delete/{{this._id}}" --}}
                     </td>
                 </tr>
                 {{/each}}
@@ -151,6 +187,60 @@
                 document.getElementById("tableCocoSSD").style.display = 'table';
             }
 
+
+
+            // Custom Model Teachable Machine
+
+            const URL = "./model/";
+            let modelT, labelContainer, maxPredictions;
+            // Load the image model
+            //async function init() {
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+
+            // Load the modelT
+            modelT = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = modelT.getTotalClasses();
+
+            // append elements to the DOM
+            labelContainer = document.getElementById("tabT");
+
+            const predictionT = await modelT.predictTopK(img);
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const classPrediction = predictionT[i].className + ': ' + predictionT[i].probability.toFixed(2);
+
+                // labelContainer.childNodes[i].innerHTML = classPrediction;
+
+                console.log(classPrediction);
+
+                // console.log(predictionT[i].probability);
+
+                if (predictionT[0] !== undefined) {
+
+                    document.getElementById("tdClassT1").innerHTML = predictionT[0].className;
+                    document.getElementById("tdClassT2").innerHTML = predictionT[1].className;
+                    document.getElementById("tdClassT3").innerHTML = predictionT[2].className;
+                    document.getElementById("tdClassT4").innerHTML = predictionT[3].className;
+                    document.getElementById("tdClassT5").innerHTML = predictionT[4].className;
+
+                    document.getElementById("tdScoreT1").innerHTML = (predictionT[0].probability * 100).toFixed(2);
+                    document.getElementById("tdScoreT2").innerHTML = (predictionT[1].probability * 100).toFixed(2);
+                    document.getElementById("tdScoreT3").innerHTML = (predictionT[2].probability * 100).toFixed(2);
+                    document.getElementById("tdScoreT4").innerHTML = (predictionT[3].probability * 100).toFixed(2);
+                    document.getElementById("tdScoreT5").innerHTML = (predictionT[4].probability * 100).toFixed(2);
+
+                }
+            }
+
+            if (predictionT[0] !== undefined) {
+                document.getElementById("tabT").style.display = 'table';
+            }
+
+
+            // Fin Tableaux
+
+
             var maDate = new Date();
             laDate = maDate.getDate() + "/" + (maDate.getMonth() + 1) + "/" + maDate.getFullYear();
             TailleImage = imgfile.size;
@@ -200,7 +290,35 @@
                 },
             });
 
+
         })()
 
     }
+
+
+    // Suppression AJAX
+    function deleteFunction(element) {
+
+        console.log(element);
+
+        // AJAX request
+        $.ajax({
+            url: '/delete/' + element,
+            type: 'DELETE',
+            data: { },
+            success: function () {
+
+                var dataResult = JSON.parse(dataResult);
+                if (dataResult.statusCode == 200) {
+                    $ele.fadeOut().remove();
+                }
+
+            },
+            error: function () {
+                console.log('process error ajax');
+            },
+        });
+    }
+    // });
+
 </script>

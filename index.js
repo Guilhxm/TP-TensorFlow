@@ -23,6 +23,9 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // parse requests of content-type - application/json
 app.use(bodyParser.json())
 
+// Set Static Folder
+app.use(express.static(path.join(__dirname, 'public')));
+
 /**
  * Import MongoClient & connexion à la DB
  */
