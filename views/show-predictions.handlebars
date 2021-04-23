@@ -95,7 +95,7 @@
 
     </div>
     <div id="tabHistorique" class="eight wide column">
-        <table class="ui celled fixed padded center aligned table" style="margin-top: 40px;">
+        <table id="tabAll" class="ui celled fixed padded center aligned table" style="margin-top: 40px;">
             <thead>
                 <tr class="center aligned">
                     <th>Date</th>
@@ -109,7 +109,7 @@
             </thead>
             <tbody>
                 {{#each prediction_entries}}
-                <tr>
+                <tr id="tr_{{this._id}}">
                     <td>{{this.Date}}</td>
                     <td>{{this.Nom}}</td>
                     <td class="center aligned">{{this.Taille}}</td>
@@ -118,7 +118,6 @@
                     <td class="center aligned">
                         <a onclick="deleteFunction('{{this._id}}')" id="{{this._id}}"
                             class="ui small red button">Supprimer</a>
-                        {{!-- href="/delete/{{this._id}}" --}}
                     </td>
                 </tr>
                 {{/each}}
@@ -305,13 +304,19 @@
         $.ajax({
             url: '/delete/' + element,
             type: 'DELETE',
-            data: { },
+            data: { id: element },
             success: function () {
+                console.log('process ok');
+                // var dataResult = JSON.parse(dataResult);
+                //if (dataResult.statusCode == 200) {
+                //    $ele.fadeOut().remove();
+                //}
 
-                var dataResult = JSON.parse(dataResult);
-                if (dataResult.statusCode == 200) {
-                    $ele.fadeOut().remove();
-                }
+                var tableAll = document.getElementById('tabAll');
+                var rowCount = tableAll.rows.length;
+                tableAll.deleteRow(rowCount - 1);
+                
+                // document.getElementById("tr_" + element).deleteRow(0);
 
             },
             error: function () {
